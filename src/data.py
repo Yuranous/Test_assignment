@@ -1,10 +1,11 @@
+import json
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
 import pandas as pd
-from pandas import Series, DataFrame
+from pandas import DataFrame
 
-filepath = 'res/signatures.tsv'
+from src.settings import FILE_PATH
 
 
 class Repository(ABC):
@@ -33,24 +34,26 @@ class Repository(ABC):
 
 class FileRepository(Repository):
     def __init__(self):
-        self.df = pd.read_csv(filepath, sep='\t', index_col=0)
+        self.df = pd.read_csv(FILE_PATH, sep='\t', index_col=0)
 
     def get_data(self,
                  signature_ids: List[str] = None,
                  fields: List[str] = None,
                  ):
         df = self.prepare_dataframe(self.df, indices=signature_ids, columns=fields)
-        return df
+        return json.loads(df.to_json(orient="table"))
 
     def get_fields(self):
-        df = self.df
-
-        return self.get_list(df.columns)
+        return [
+            {
+                'name': str(column),
+                'type': str(data.dtype),
+            }
+            for column, data in self.df.iteritems()
+        ]
 
     def get_indices(self):
-        df = self.df
-
-        return self.get_list(df.index)
+        return list(self.df.index)
 
     def get_stats(self,
                   signature_ids: Optional[List[str]] = None,
@@ -58,11 +61,7 @@ class FileRepository(Repository):
                   ):
         df = self.prepare_dataframe(self.df, indices=signature_ids, columns=fields)
 
-        return df.describe()
-
-    @staticmethod
-    def get_list(series: Series):
-        return list(series)
+        return json.loads(df.describe().to_json())
 
     @staticmethod
     def prepare_dataframe(
