@@ -5,7 +5,7 @@ from typing import List, Optional
 import pandas as pd
 from pandas import DataFrame
 
-from src.settings import FILE_PATH
+from .settings import FILE_PATH, FILE_SEPARATOR
 
 
 class Repository(ABC):
@@ -33,8 +33,9 @@ class Repository(ABC):
 
 
 class FileRepository(Repository):
+
     def __init__(self):
-        self.df = pd.read_csv(FILE_PATH, sep='\t', index_col=0)
+        self.df = pd.read_csv(FILE_PATH, sep=FILE_SEPARATOR, index_col=0)
 
     def get_data(self,
                  signature_ids: List[str] = None,
@@ -61,7 +62,7 @@ class FileRepository(Repository):
                   ):
         df = self.prepare_dataframe(self.df, indices=signature_ids, columns=fields)
 
-        return json.loads(df.describe().to_json())
+        return json.loads(df.describe().to_json(orient='table'))
 
     @staticmethod
     def prepare_dataframe(
@@ -70,8 +71,14 @@ class FileRepository(Repository):
             columns: Optional[List[str]] = None,
     ):
         if columns:
-            df = df[columns]
+            try:
+                df = df[columns]
+            except KeyError as e:
+                raise KeyError("Invalid column name provided")
         if indices:
-            df = df.loc[indices]
+            try:
+                df = df.loc[indices]
+            except KeyError as e:
+                raise KeyError("Invalid index provided")
 
         return df

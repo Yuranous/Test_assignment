@@ -1,20 +1,13 @@
 from typing import Optional, List
 
-from fastapi import FastAPI, Depends, Query
+from fastapi import FastAPI, Query, HTTPException
 
-from src.data import FileRepository
-from src.model import DataFrameModel, FieldListModel, IndexListModel
+from .data import FileRepository
+from .models import DataFrameModel, FieldListModel, IndexListModel
 
 app = FastAPI()
 repository = FileRepository()
 
-
-# @app.get('/signatures', response_model=DataFrameModel)
-# def get_signatures(params: SignaturesQueryParams = Depends()):
-#     """
-#     Get all signatures matching specified criteria.
-#     """
-#     return repository.get_data(**params.to_dict())
 
 @app.get('/signatures', response_model=DataFrameModel)
 def get_signatures(
@@ -30,24 +23,30 @@ def get_signatures(
     """
     Get all signatures matching specified criteria.
     """
-    return repository.get_data(ids, fields)
+    try:
+        return repository.get_data(ids, fields)
+    except KeyError as e:
+        raise HTTPException(status_code=406, detail=str(e))
 
 
-@app.get('/signatures/stats')
+@app.get('/signatures/stats', response_model=DataFrameModel)
 def get_signatures_statistics(
         ids: Optional[List[str]] = Query(
             None,
-            description="List of signatures' IDs that should be shown in response",
+            description="List of signatures' IDs that should be used in the statistical computation",
         ),
         fields: Optional[List[str]] = Query(
             None,
-            description="List of fields that should be shown in response",
+            description="List of fields that should be used in the statistical computation",
         )
 ):
     """
     Get statistical description of signatures matching specified criteria.
     """
-    return repository.get_stats(ids, fields)
+    try:
+        return repository.get_stats(ids, fields)
+    except KeyError as e:
+        raise HTTPException(status_code=406, detail=str(e))
 
 
 @app.get('/signatures/fields', response_model=FieldListModel)
