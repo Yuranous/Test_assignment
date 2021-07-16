@@ -9,6 +9,10 @@ app = FastAPI()
 repository = FileRepository()
 
 
+def clear_list_from_blank(data: List):
+    return [i for i in data if i]
+
+
 @app.get('/signatures', response_model=DataFrameModel)
 def get_signatures(
         ids: Optional[List[str]] = Query(
@@ -23,6 +27,8 @@ def get_signatures(
     """
     Get all signatures matching specified criteria.
     """
+    ids = clear_list_from_blank(ids) if ids else ids
+    fields = clear_list_from_blank(fields) if fields else fields
     try:
         return repository.get_data(ids, fields)
     except KeyError as e:
@@ -43,6 +49,8 @@ def get_signatures_statistics(
     """
     Get statistical description of signatures matching specified criteria.
     """
+    ids = clear_list_from_blank(ids) if ids else ids
+    fields = clear_list_from_blank(fields) if fields else fields
     try:
         return repository.get_stats(ids, fields)
     except KeyError as e:
