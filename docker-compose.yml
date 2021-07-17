@@ -6,7 +6,7 @@ services:
     environment:
       - FILE_PATH=${FILE_PATH}
       - FILE_SEPARATOR=${FILE_SEPARATOR}
-      - PORT=8000
+      - PORT=${PORT-8000}
     ports:
     - "8000:8000"
     volumes:
