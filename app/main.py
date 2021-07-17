@@ -1,6 +1,7 @@
 from typing import Optional, List
 
 from fastapi import FastAPI, Query, HTTPException
+from starlette.responses import RedirectResponse
 
 from .data import FileRepository
 from .models import DataFrameModel, FieldListModel, IndexListModel
@@ -11,6 +12,11 @@ repository = FileRepository()
 
 def clear_list_from_blank(data: List):
     return [i for i in data if i]
+
+
+@app.get('/')
+def home():
+    return RedirectResponse("/docs")
 
 
 @app.get('/signatures', response_model=DataFrameModel)
