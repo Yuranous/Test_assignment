@@ -14,7 +14,7 @@ def clear_list_from_blank(data: List):
     return [i for i in data if i]
 
 
-@app.get('/', )
+@app.get('/', include_in_schema=False)
 def home():
     """
     Redirect to documentation page
