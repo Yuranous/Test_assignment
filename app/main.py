@@ -14,8 +14,11 @@ def clear_list_from_blank(data: List):
     return [i for i in data if i]
 
 
-@app.get('/')
+@app.get('/', )
 def home():
+    """
+    Redirect to documentation page
+    """
     return RedirectResponse("/docs")
 
 
